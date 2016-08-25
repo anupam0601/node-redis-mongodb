@@ -3,6 +3,7 @@
 var express = require('express');
 var mongojs = require('mongojs');
 var redis = require('redis');
+var bodyParser  =   require("body-parser");
 
 // create a new redis client and connect to our local redis instance
 var client = redis.createClient();
@@ -15,6 +16,11 @@ client.on('connect', function(){
 var app = express();
 var db = mongojs('rest');
 var datarest = db.collection('datarest');
+
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({"extended" : false}));
+
 
 // GET from redis else from mongodb
 app.get('/place', function(req,res){
@@ -45,6 +51,13 @@ app.get('/place', function(req,res){
 	});
 });
 
+// GET by id
+app.get('/place/:id', function(req,res){
+
+	db.datarest.findOne({ _id: mongojs.ObjectId(req.params.id)}, function(err, doc) {
+    	res.json(doc);
+	})
+});
 
 
 app.listen(3000, function () {
