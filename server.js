@@ -31,7 +31,7 @@ app.get('/place', function(req,res){
 			
 			console.log("sending from redis");
 
-			res.send({ "state": reply, "source": "redis cache" });
+			res.send(reply);
 		
 		} else {
 
@@ -42,7 +42,7 @@ app.get('/place', function(req,res){
 				res.json(docs);
 
 				// Setting the data on redis 
-				client.set('stateData',JSON.stringify(docs));
+				client.set('stateData',docs);
 				
 			});
 		
@@ -51,12 +51,39 @@ app.get('/place', function(req,res){
 	});
 });
 
-// GET by id
+
+// GET by id from Redis else from Mongodb
 app.get('/place/:id', function(req,res){
 
-	db.datarest.findOne({ _id: mongojs.ObjectId(req.params.id)}, function(err, doc) {
-    	res.json(doc);
-	})
+	client.get('statDatId', function(err,reply){
+		
+		if(reply){
+		
+			console.log("Sending data from redis ==>",reply);
+			
+			res.send(reply);
+
+		} else {
+
+			// Mongojs -- finds the entry by id --> req.params.id
+			datarest.findOne({ _id: mongojs.ObjectId(req.params.id)}, function(err, docs){
+
+				console.log("sending from db",docs);
+
+				res.json(docs);
+
+				// Setting the data on redis
+				console.log("Setting data on Redis")
+
+				// Stringifying the data so that it can be stored as json string in Redis
+				client.set('statDatId',JSON.stringify(docs));
+
+			});
+	    }
+
+  	});
+
+
 });
 
 
