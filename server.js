@@ -42,7 +42,9 @@ app.get('/place', function(req,res){
 				res.json(docs);
 
 				// Setting the data on redis 
-				client.set('stateData',docs);
+				console.log("Setting data into Redis");
+
+				client.set('stateData',JSON.stringify(docs));
 				
 			});
 		
@@ -65,6 +67,8 @@ app.get('/place/:id', function(req,res){
 
 		} else {
 
+			console.log(req.params.id);
+
 			// Mongojs -- finds the entry by id --> req.params.id
 			datarest.findOne({ _id: mongojs.ObjectId(req.params.id)}, function(err, docs){
 
@@ -83,10 +87,47 @@ app.get('/place/:id', function(req,res){
 
   	});
 
+});
+
+
+// GET by place name
+app.get('/special',function(req,res){
+
+
+
+	client.get('statSpecial', function(err,reply){
+		
+		if(reply){
+		
+			console.log("Sending data from redis ==>",reply);
+			
+			res.send(reply);
+
+		} else {
+
+
+			// Mongojs -- finds the entry by id string specific
+			datarest.findOne({ _id: "special"}, function(err, docs){
+
+				console.log("sending from db",docs);
+
+				res.json(docs);
+
+				// Setting the data on redis
+				console.log("Setting data on Redis")
+
+				// Stringifying the data so that it can be stored as json string in Redis
+				client.set('statSpecial',JSON.stringify(docs));
+
+			});
+	    }
+
+  	});
 
 });
 
 
-app.listen(3000, function () {
+// Listening app on 3000 
+app.listen(3000, function(){
     console.log("listening on 3000");
 });
