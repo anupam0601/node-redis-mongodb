@@ -126,6 +126,26 @@ app.get('/special',function(req,res){
 
 });
 
+// Modify a document
+app.put('/place/:id', function (req, res) {
+  var id = req.params.id;
+
+  console.log(req.body.name);
+  
+  db.contactlist.findAndModify({
+  
+    query: {_id: mongojs.ObjectId(id)},
+  
+    update: {$set: {"place":req.body.place}},
+  
+    new: true}, function (err, doc) {
+
+      res.json(doc);
+    }
+
+  );
+
+});
 
 // Listening app on 3000 
 app.listen(3000, function(){
